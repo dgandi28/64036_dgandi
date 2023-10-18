@@ -1,0 +1,57 @@
+---
+title: "64036_Assignment1"
+author: "Durgaprasad Gandi"
+date: "2023-09-29"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library("knitr")
+```
+# Summary of the Carseats dataset:
+```{r}
+library(ISLR) #loads the ISLR library
+summary(Carseats)
+```
+# Number of (observations)rows in Carseats dataset:
+```{r}
+number_rows <- nrow(Carseats) #To get number of rows in the dataset.
+print(number_rows)
+```
+***We get 400 observations in a Carseats dataset***
+
+# Maximum value of the advertising attribute:
+
+```{r}
+Advertising_Max <-max(Carseats$Advertising) #max is used to get maximum value of dataset.
+print(Advertising_Max)
+```
+# Calculating the inter quartile of price attribute:
+```{r}
+iqr_price <-IQR(Carseats$Price) #IQR is function to get inter quartile range.
+print(iqr_price)
+```
+***The value of IQR is 31***
+
+# Plotting of Price against Sales:
+```{r}
+plot_SP<- plot(Carseats$Price,
+Carseats$Sales,
+xlab="Price", # on x axis we take Price as label.
+ylab="Sales") #on y axis we take Sales as label.
+print(plot_SP)
+```
+# Correlation of Price and Sales:
+```{r}
+cor_cooeft <- cor(Carseats$Price, Carseats$Sales) #$ indicates respective column of dataset.
+print(cor_cooeft)
+```
+***As the value is -0.4449 i.e the relation between Price and Sales is negative which indicates Weak relation***
+
+

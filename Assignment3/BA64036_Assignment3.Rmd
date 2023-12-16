@@ -1,0 +1,243 @@
+---
+title: "BA64036_Assignment-3"
+author: "Durga Prasad Gandi"
+date: "2023-11-03"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#### Question1. Run the following code in R-studio to create two variables X and Y
+
+```{r}
+set.seed(2017)
+
+X=runif(100)*10
+
+Y=X*4+3.45
+
+Y=rnorm(100)*0.29*Y+Y
+
+
+```
+
+**1a) Plotting of Y against X**
+```{r}
+plot(X ,Y ,main="Plot of Y against X", xlab = "X", ylab = "Y")
+```
+
+**1b) Construct a simple linear model of Y based on X. Write the equation that explains Y based on X. What is the accuracy of this model?**
+
+Linear model
+
+```{r}
+
+linear_m <- lm(Y ~ X)
+
+summary(linear_m)
+
+```
+
+***Explanation of  Y based on X is:***
+
+Residual is the difference between observed values of Y and predicted values of the given model i.e error (7.756).
+
+Coefficients:
+When (X) is zero the value of (Y) intercept is  (4.4655) and  the coefficient for X is 3.6108
+
+Equation:
+
+$$Y=4.4655+3.6108X$$
+
+Accuracy:Accuracy of the given model is 65.17% 
+   
+**1c) How the Coefficient of Determination, R2, of the model above is related to the correlation coefficient of X and Y?**
+
+Correlation coefficient between X and Y:
+
+```{r}
+cor(X, Y)
+summary(linear_m)
+```
+R^2 = 0.6517 and
+r^2 = (0.807291)^2 = 0.6571
+From above R^2 is equal to r^2 where the condition  in linear regression model is  satisfied.
+
+
+#### Question 2: We will use the ‘mtcars’ dataset for this question. The dataset is already included in your R distribution. The dataset shows some of the characteristics of different cars. The following shows few samples (i.e. the first 6 rows) of the dataset.
+
+
+
+
+***Load the dataset mtcars***
+
+```{r}
+
+head(mtcars)
+
+```
+
+*Construct a simple linear model to estimate hp using wt*
+
+```{r}
+
+lm_wt <- lm(hp ~ wt, data = mtcars)
+
+lm_wt
+
+```
+
+*Construct a simple linear model to estimate hp using mpg *
+
+```{r}
+
+lm_mpg <- lm(hp ~ mpg, data = mtcars)
+
+lm_mpg
+
+```
+
+*Compare the summary statistics of the above two models*
+
+```{r}
+
+summary(lm_wt)
+
+summary(lm_mpg)
+
+```
+
+***Which is the Best model of the above:***
+
+It seems that the model that uses Miles Per Gallon (mpg) as a predictor fits the'mtcars' dataset better for estimating Horsepower (hp) than the model that uses Weight (wt), based on the R-squared values and the statistical significance of the coefficients. A better correlation between horsepower and mpg is indicated by the higher R-squared value (0.6024), and the coefficient for mpg is statistically significant.
+
+Based on the information at this point, Chris appears to be more accurate in this study, since he feels that Miles Per Gallon (mpg) is a better indicator of Horsepower (hp).
+
+
+
+#### 2b) Build a model that uses the number of cylinders (cyl) and the mile per gallon (mpg) values of a car to predict the car Horse Power (hp). Using this model, what is the estimated Horse Power of a car with 4 calendar and mpg of 22?
+
+
+*Create a multiple linear regression model*
+```{r}
+
+multiple_model <- lm(hp ~ cyl + mpg, data = mtcars)
+
+```
+
+*Make predictions*
+
+```{r}
+new_data <- data.frame(cyl = 4, mpg = 22)
+estimated_hp <- predict(multiple_model, newdata = new_data)
+estimated_hp
+```
+
+The Estimated horse power for 4 cylinders and 22 MPG is 88.93618
+
+
+#### Question3. For this question, we are going to use BostonHousing dataset. The dataset is in ‘mlbench’ package, so we first need to instal the package, call the library and the load the dataset using the following commands
+
+
+**install and call the  mlbench package and load the Bostonhousing data set:**
+
+```{r}
+
+library(mlbench)
+data(BostonHousing)
+BostonHousing$chas = factor(BostonHousing$chas, levels = c(0, 1))
+
+```
+
+#### 3(a):Build a model to estimate the median value of owner-occupied homes (medv)based on the following variables: crime crate (crim), proportion of residential land zoned for lots over 25,000 sq.ft (zn), the local pupil-teacher ratio (ptratio) and weather the whether the tract bounds Chas River(chas). Is this an accurate model?
+
+***Construct multiple linear regression model***
+
+```{r}
+
+homes_model <- lm(medv ~ crim + zn + ptratio + chas, data = BostonHousing)
+summary(homes_model)
+
+```
+The R-squared value of the model is roughly 0.3599. This figure indicates the percentage of the variance in median home prices (medv) that can be attributed to the variables in the model. Although the model accounts for a portion of the variance, it indicates that housing values may be better explained.
+
+Statistically significant coefficients for 'crim,' 'zn,' 'ptratio,' and 'chas1' are all present (low p-values); these results imply that these variables influence median house values. This is one of the model's advantages.
+
+At 0.3547, the corrected R-squared value is somewhat less than the unadjusted It implies that, given the amount of predictors, even while the model explains some variance, it might not offer a very good fit.
+
+
+#### 3(b) Imagine two houses that are identical in all aspects but one bounds the Chas River and the other does not. Which one is more expensive and by how much?
+```{r}
+summary(linear_m)
+```
+
+According to the  result of our model, the coefficient for ‘chas1’ is 4.58393 so that the median house value for houses on the Charles River is estimated to be $4,583.93 higher when compared to other houses not on river.Hence, the house on the Charles River is predicted to be more expensive.
+
+#### 3(b2): Imagine two houses that are identical in all aspects but in the neighborhood of one of them the pupil-teacher ratio is 15 and in the other one is 18. Which one is more expensive and by how much?
+
+Price_Comparison = pt-ratio coefficient*(pupil-teacher (18)-pupil-teacher(15))
+Price_Comparison = -1.49367 * (18 -15)
+Price_Comparison ≈ -4.48101
+
+
+**The coefficient of pupil-teacher ratio = -1.49367 in which for every unit change there will be decrease of approximately ($1,494). Hence,there will be increase of 3 units (yielding pupil-teacher ratio of 15 and 18 for the two houses). The  values estimated  indicates that the pupil-teacher ratio of 18 will be less expensive compared to that of pupil-teacher ratio of 15 ($1,494*3)≈ $4,482.**
+
+
+#### 3(C): Which of the variables are statistically important (i.e. related to the house price)? Hint: use the p-values of the coefficients to answer.
+
+You can look at the p-values that correspond to the coefficients of each independent variable in your linear regression model to find out which factors are statistically important in relation to house price. Lower p-values often denote statistical significance and imply a relationship between the respective variables and  price of home.
+
+*The p-values and the coefficients  are used to rate their importance:*
+
+Crime Rate:For 'crim' the p-value is 2.20e-10,that is too low i.e is <0.05. This indicates that the crime rate is statistically significant and related to price of the houses.
+
+zn: For 'zn' the p-value is 6.14e-06 which is also less. It can be said   that the proportion of land zoned for large lots is statistically significant and related to price of the houses.
+
+Ptratio:For 'ptratio' the p-value is < 2e-16, that is very low. This indicates that the pt ratio is more significant and related to price of the houses.
+
+Chas1:  For 'chas1' the p-value is 0.000514, which is low. This tells us  that whether the tract bounds the Charles River is  important and related to price of the houses .
+
+In Conclusion,p-values (crim, zn, ptratio, and chas1) for all the variables in this  model,suggest that they are less   important and related to price of the houses .
+
+
+#### 3(D): Use the anova analysis and determine the order of importance of these four variables.
+
+
+```{r}
+anova_model<-anova(homes_model)
+
+print(anova_model)
+```
+***Anova Analysis Interpretation***
+
+The order of importance for the variables according to the ANOVA results: 
+
+Pupil-Teacher Ratio (ptratio): ptratio is  first in place of importance  that has the lowest p-value (p < 2.2e-16),and  highest F value(118.007) and Mean Square value(6440.8) implying  the most statistically significant variable and the most important in explaining house prices.
+
+Crime Rate (crim): Crime rate also has almost near p values(p < 2.2e-16) as of ptratio  and F value (86.287)  and also mean square is 4709.5 implies second most important variable.
+
+Proportion of Residential Land Zoned for Large Lots (zn): This variable is the third place in importance  with  F value (65.122) and p-value (p = 5.253e-15).
+
+Whether the Tract Bounds the Charles River (chas1): It has the highest p-value among the four variables with(p = 0.0005137), and less F value(12.224) suggest that it is the less significant of the variables in describing price of the houses.
+
+#### The list of importance of the variables are  mentioned below:
+
+1.Pupil-Teacher Ratio
+
+2.Crime Rate 
+
+3.Proportion of Residential Land Zoned for Large Lots 
+
+4.Whether Tract Bounds the Charles River 
+
+
+
+
+
+
+

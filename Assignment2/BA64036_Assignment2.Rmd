@@ -1,0 +1,307 @@
+---
+title: "BA64036_Assignment2"
+author: "Durga Prasad Gandi"
+date: "2023-10-14"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+## install required library
+```{r}
+library(dplyr)
+
+```
+# load the retailset
+```{r}
+
+retail = read.csv("C:/Users/gdurg/Desktop/rhistory/Online_Retail.csv")
+
+head(retail)
+
+```
+1. Show the breakdown of the number of transactions by countries i.e., how many transactions are in the retailset for each country (consider all records including cancelled transactions). Show this in total number and also in percentage. Show only countries accounting for more than 1% of the total transactions. 
+
+
+## Compute Number of transactions by Countries
+
+```{r}
+
+country_count = retail %>% group_by(Country) %>% count(Country)
+
+country_count #Number of transactions for each country
+
+country_percentage = retail %>% group_by(Country) %>% summarise(percent = 100* n()/nrow(retail))
+
+country_percentage #This gives the percentage of transactiond for each Country
+
+filter = filter(country_percentage, percent>1)  #which gives value greater than 1 in retailset
+
+filter
+
+```
+
+
+
+2. Create a new variable ‘TransactionValue’ that is the product of the exising ‘Quantity’ and ‘UnitPrice’ variables. Add this variable to the retailframe. 
+
+
+
+```{r}
+
+retail$TransactionValue = retail$Quantity * retail$UnitPrice
+
+head(retail$TransactionValue)
+# The data will be available by using head of retailset.
+```
+3. Using the newly created variable, TransactionValue, show the breakdown of transaction values by countries i.e. how much money in total has been spent each country. Show this in total sum of transaction values. Show only countries with total transaction exceeding 130,000 British Pound. 
+
+
+```{r}
+
+country_transaction = retail %>% group_by(Country) %>% summarise(sum=sum(TransactionValue))
+
+
+filtered_country_transaction = filter(country_transaction, country_transaction$sum>13000)  #To get Transaction values greater than 13000 
+
+filtered_country_transaction
+
+
+```
+4. This is an optional question which carries additional marks (golden questions). In this question, we are dealing with the InvoiceDate variable. The variable is read as a categorical when you read retail from the file. Now we need to explicitly instruct R to interpret this as a Date variable. "POSIXlt" and "POSIXct" are two powerful object classes in R to deal with date and time. Click here for more information. First let’s convert ‘InvoiceDate’ into a POSIXlt object: Temp=strptime(Online_Retail$InvoiceDate,format='%m/%d/%Y %H:%M',tz='GMT') Check the variable using, head(Temp). Now, let’s separate date, day of the week and hour components retailframe with names as New_Invoice_Date, Invoice_Day_Week and New_Invoice_Hour: Online_Retail$New_Invoice_Date <- as.Date(Temp) The Date objects have a lot of flexible functions. For example knowing two date values, the object allows you to know the difference between the two dates in terms of the number days. Try this: Online_Retail$New_Invoice_Date[20000]- Online_Retail$New_Invoice_Date[10] Also we can convert dates to days of the week. Let’s define a new variable for that Online_Retail$Invoice_Day_Week= weekdays(Online_Retail$New_Invoice_Date) For the Hour, let’s just take the hour (ignore the minute) and convert into a normal numerical
+value: Online_Retail$New_Invoice_Hour = as.numeric(format(Temp, "%H")) Finally, lets define the month as a separate numeric variable too: Page 3 Online_Retail$New_Invoice_Month = as.numeric(format(Temp, "%m"))
+
+
+
+```{r}
+
+Temp = strptime(retail$InvoiceDate, format = '%m/%d/%Y %H:%M', tz = 'GMT')
+head(Temp)
+retail$New_Invoice_Date = as.Date(Temp)
+retail$Invoice_Day_Week = weekdays(retail$New_Invoice_Date)
+retail$New_Invoice_Hour = as.numeric(format(Temp, "%H"))
+retail$New_Invoice_Month = as.numeric(format(Temp, "%m"))
+```
+
+```{r}
+
+head(retail)
+
+
+```
+
+a. Show the percentage of transactions (by numbers) by days of the week 
+
+
+```{r}
+
+day_per = retail %>% group_by(Invoice_Day_Week) %>% summarise(percent = 100* n()/nrow(retail))
+
+day_per
+
+```
+b. Show the percentage of transactions (by transaction volume) by days of the week.
+
+
+
+```{r}
+
+day_transaction = retail %>% group_by(Invoice_Day_Week) %>% summarise(sum= sum(TransactionValue))
+
+day_transaction_per = 100*(day_transaction$sum)/sum(day_transaction$sum)
+
+day_transaction$sum = day_transaction_per
+
+day_transaction
+
+```
+
+c. Show the percentage of transactions (by transaction volume) by month of the year.
+
+
+
+```{r}
+
+month_transaction = retail %>% group_by(New_Invoice_Month) %>% summarise(sum= sum(TransactionValue))
+
+month_transaction_per = 100*(month_transaction$sum)/sum(month_transaction$sum)
+
+month_transaction$sum = month_transaction_per
+
+month_transaction
+
+```
+
+d. What was the date with the highest number of transactions from Australia? 
+
+
+
+```{r}
+
+australia = retail %>% 
+filter(Country=='Australia')%>% group_by(New_Invoice_Date)%>%
+summarise(Number=sum(Quantity),amount=sum(TransactionValue))%>%
+arrange(desc(Number))  #desc used to arrange the values in descending  order
+
+date_highest_transactions = australia$New_Invoice_Date[which.max(table(australia$New_Invoice_Date))]
+#To calculate maximum value which.max is used here.
+
+
+date_highest_transactions
+
+
+
+```
+***The date for maximum transaction is 2011-06-15.***
+
+e. The company needs to shut down the website for two consecutive hours for maintenance.
+What would be the hour of the day to start this so that the distribution is at minimum for the customers? The responsible IT team is available from 7:00 to 20:00 every day.
+
+
+```{r}
+
+hour_transaction_retail = retail %>% group_by(New_Invoice_Hour) %>% summarize(Count = n()) %>% filter(New_Invoice_Hour >= 7 & New_Invoice_Hour <= 20) %>% arrange(Count)
+
+optimal_start_hour = hour_transaction_retail %>% slice(1) %>% pull(New_Invoice_Hour)
+
+optimal_start_hour2 = ifelse(optimal_start_hour == 20, optimal_start_hour - 1, optimal_start_hour + 1)
+
+start_of_maintenance = paste(optimal_start_hour, ":00", sep = "")
+end_of_maintenance = paste(optimal_start_hour2, ":00", sep = "")
+
+start_of_maintenance
+end_of_maintenance
+
+```
+
+***7,8 are two consecutive hours for maintenance.***
+
+
+5. Plot the histogram of transaction values from Germany. Use the hist() function to plot. 
+
+
+
+```{r}
+
+germany = retail[retail$Country == "Germany", ]
+
+hist(germany$TransactionValue, main = "Transaction Values in Germany", xlab = "Transaction Value" , ylab = "Frequency",col = "yellow", border = "red")
+
+
+```
+   6. Which customer had the highest number of transactions? Which customer is most valuable (i.e. highest total sum of transactions)? 
+
+
+```{r}
+
+customer_highest_transaction =retail  %>% group_by(CustomerID)%>%
+summarise(CustomerTransaction = n())%>% filter(CustomerID != "NA")%>% filter(CustomerTransaction ==max(CustomerTransaction) )
+
+customer_highest_transaction$CustomerID
+
+
+customer_transaction_total = retail %>% group_by(CustomerID)%>%
+summarise(total.transaction.by.each.customer = sum(TransactionValue))%>% arrange(desc(total.transaction.by.each.customer))%>%
+filter(CustomerID != "NA")%>% filter(total.transaction.by.each.customer ==max(total.transaction.by.each.customer) )
+
+customer_transaction_total$CustomerID
+
+```
+***The maximum number of transactions is done by Customer Id:17841***
+
+7. Calculate the percentage of missing values for each variable in the retailset (5% of total points). Hint colMeans():
+
+
+```{r}
+
+missing_percentage = colMeans(is.na(retail)) * 100
+
+missing_percentage
+
+
+```
+***The customerId has more percentage of missing values  for the above question***
+
+
+8. What are the number of transactions with missing CustomerID records by countries? 
+
+
+```{r}
+
+missing_customer_transaction = retail[is.na(retail$CustomerID), ]
+missing_customer_counts_country = table(missing_customer_transaction$Country)
+
+missing_customer_counts_country
+
+
+```
+
+***The above data shows where Bahrain have least value(2) and UK has highest value (133600)in the retailset.***
+
+
+9. On average, how often the costumers comeback to the website for their next shopping? (i.e. what is the average number of days between consecutive shopping) (5% of total points!) Hint: 1. A close approximation is also acceptable and you may find diff() function useful.
+
+
+
+```{r}
+
+time_diff = retail %>% 
+  group_by(CustomerID) %>%
+  mutate(difference.in.consecutivedays = c(0, diff(New_Invoice_Date))) %>%
+  filter(difference.in.consecutivedays > 0) %>%
+  ungroup()
+
+average_time_diff = mean(time_diff$difference.in.consecutivedays)
+
+average_time_diff
+
+
+```
+***The average time difference between consecutive days is 38.4***
+
+
+10. n the retail sector, it is very important to understand the return rate of the goods purchased by customers. In this example, we can define this quantity, simply, as the ratio of the number of transactions cancelled (regardless of the transaction value) over the total number of transactions. page 4 with this definition, what is the return rate for the French customers? (10% of total points). Consider the cancelled transactions as those where the ‘Quantity’ variable has a negative value.
+
+
+
+```{r}
+
+french_retail = filter(retail, Country == "France" )
+
+return_rate = nrow(filter(french_retail, Quantity<1)) / nrow(french_retail)
+
+return_rate
+
+
+```
+***The return rate for the french retailset is 1.74%***
+
+11. What is the product that has generated the highest revenue for the retailer? (i.e. item with the highest total sum of ‘TransactionValue’). 
+
+
+
+```{r}
+
+product_revenue = retail %>% group_by(StockCode) %>% summarise(sum = sum(TransactionValue))
+
+product_revenue[which.max(product_revenue$sum), ]
+
+
+```
+***The product with stockcode “DOT” is the one that has produced highest revenue.***
+
+12. How many unique customers are represented in the retailset? You can use unique() and length() functions.
+
+
+```{r}
+
+unique_customers = length(unique(retail$CustomerID))
+
+unique_customers
+
+```
+***we have total 4373 Unique customers in the retail.***
